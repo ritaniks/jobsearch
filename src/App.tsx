@@ -21,14 +21,8 @@ const App: React.FC = () => {
     setJobs(data);
   };
 
-  let order: Function;
-
-  const toggleOrder = async (newOrder: string) => {
-    order(newOrder);
-  };
-
-  order = (f: string) => {
-    console.log(f);
+  const toggleOrder = (newOrder: string) => {
+    console.log(newOrder);
   };
 
   useEffect(() => {

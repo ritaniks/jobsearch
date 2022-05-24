@@ -6,14 +6,15 @@ import "./index.css";
 
 const OrderBy: React.FC = () => {
   const [selected, setSelected] = useState(OrderTypes.Random);
+
   const { toggleOrder } = useContext(OrderContext);
-  toggleOrder?.(selected);
 
   const onOrderChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
     if (
       e.target.value === OrderTypes.Random ||
       e.target.value === OrderTypes.Prioprity
     ) {
+      toggleOrder?.(e.target.value);
       setSelected(e.target.value);
     }
   };
