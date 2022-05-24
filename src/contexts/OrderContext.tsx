@@ -1,15 +1,18 @@
-import React from "react";
+import React, { createContext, useState } from "react";
 import OrderDefinition, { OrderTypes } from "../types/order";
 
 interface IOrderContext {
   orderby: OrderDefinition;
-  toggleOrder?: (newOrder: string) => void;
+  setOrder: React.Dispatch<React.SetStateAction<OrderTypes>>;
 }
 
-const defaultState = {
-  orderby: OrderTypes.Random,
+export const OrderContext = createContext<IOrderContext>({} as IOrderContext);
+
+export const connect = (Component: React.FC) => (props: any) => {
+  const [orderby, setOrder] = useState(OrderTypes.Random);
+  return (
+    <OrderContext.Provider value={{ orderby, setOrder }}>
+      <Component {...props} />
+    </OrderContext.Provider>
+  );
 };
-
-const OrderContext = React.createContext<IOrderContext>(defaultState);
-
-export default OrderContext;

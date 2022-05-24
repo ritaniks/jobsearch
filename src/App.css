@@ -21,3 +21,10 @@
   margin-bottom: 2rem;
   margin-top: 16px;
 }
+
+.Loader {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

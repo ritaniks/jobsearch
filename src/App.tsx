@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 
 import Job from "./components/Job";
 import Nav from "./components/Nav";
 import OrderBy from "./components/OrderBy";
-import OrderContext from "./contexts/OrderContext";
+import { connect, OrderContext } from "./contexts/OrderContext";
 import { OrderTypes } from "./types/order";
 import JobDefinition from "./types/job";
 
@@ -21,55 +21,48 @@ const App: React.FC = () => {
     setJobs(data);
   };
 
-  const toggleOrder = (newOrder: string) => {
-    console.log(newOrder);
-  };
+  const { orderby } = useContext(OrderContext);
 
   useEffect(() => {
     setLoading(true);
     setTimeout(() => fetchData(), 1000);
   }, []);
 
-  const sortedJobs: JobDefinition[] = [...jobs].sort(
-    (pr1, pr2) => pr1.priority - pr2.priority
-  );
-  console.log("test:", sortedJobs);
+  let sortedJobs: JobDefinition[];
+
+  if (orderby === OrderTypes.Prioprity) {
+    sortedJobs = [...jobs].sort((pr1, pr2) => pr1.priority - pr2.priority);
+  } else sortedJobs = shuffleArray([...jobs]);
+
+  function shuffleArray(array: JobDefinition[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
 
   const JobList: React.ReactElement[] = sortedJobs.map((value) => {
     const { id } = value;
     return <Job key={id} {...value} />;
   });
 
-  const loaderStyle: React.CSSProperties = {
-    height: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
   return (
     <div className="App">
       <Nav />
       {loading && (
-        <div style={loaderStyle}>
+        <div className="Loader">
           <ClimbingBoxLoader color={"#00c"} loading={loading} size={15} />
         </div>
       )}
-      <OrderContext.Provider
-        value={{
-          orderby: OrderTypes.Random,
-          toggleOrder,
-        }}
-      >
-        {!!JobList.length && (
-          <div data-testid="app-jobs" className="App-jobs">
-            <OrderBy />
-            {JobList}
-          </div>
-        )}
-      </OrderContext.Provider>
+      {!!JobList.length && (
+        <div data-testid="app-jobs" className="App-jobs">
+          <OrderBy />
+          {JobList}
+        </div>
+      )}
     </div>
   );
 };
 
-export default App;
+export default connect(App);

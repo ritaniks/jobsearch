@@ -1,21 +1,18 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 
 import { OrderTypes } from "../../types/order";
-import OrderContext from "../../contexts/OrderContext";
+import { OrderContext } from "../../contexts/OrderContext";
 import "./index.css";
 
 const OrderBy: React.FC = () => {
-  const [selected, setSelected] = useState(OrderTypes.Random);
-
-  const { toggleOrder } = useContext(OrderContext);
+  const { orderby, setOrder } = useContext(OrderContext);
 
   const onOrderChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
     if (
       e.target.value === OrderTypes.Random ||
       e.target.value === OrderTypes.Prioprity
     ) {
-      toggleOrder?.(e.target.value);
-      setSelected(e.target.value);
+      setOrder(e.target.value);
     }
   };
 
@@ -26,7 +23,7 @@ const OrderBy: React.FC = () => {
         className="App-sortby__select"
         id="filtersortby"
         onChange={onOrderChange}
-        value={selected}
+        value={orderby}
       >
         <option value={OrderTypes.Random}>Random</option>
         <option value={OrderTypes.Prioprity}>By Priority</option>
