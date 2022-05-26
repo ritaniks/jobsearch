@@ -7,12 +7,14 @@ import OrderBy from "./components/OrderBy";
 import { connect, OrderContext } from "./contexts/OrderContext";
 import { OrderTypes } from "./types/order";
 import JobDefinition from "./types/job";
+import ScrollToTop from "./components/ScrollToTop";
 
 import "./App.css";
 
 const App: React.FC = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showTopBtn, setShowTopBtn] = useState(false);
 
   const fetchData: () => Promise<void> = async () => {
     const result = await fetch("/jobs.json");
@@ -21,17 +23,28 @@ const App: React.FC = () => {
     setJobs(data);
   };
 
+  const goToTop = (): void => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const { orderby } = useContext(OrderContext);
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => fetchData(), 1000);
+    setTimeout(() => fetchData(), 2000);
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 400) {
+        setShowTopBtn(true);
+      } else {
+        setShowTopBtn(false);
+      }
+    });
   }, []);
 
   let sortedJobs: JobDefinition[];
 
   if (orderby === OrderTypes.Prioprity) {
-    sortedJobs = [...jobs].sort((pr1, pr2) => pr1.priority - pr2.priority);
+    sortedJobs = [...jobs].sort((pr1, pr2) => pr2.priority - pr1.priority);
   } else sortedJobs = shuffleArray([...jobs]);
 
   function shuffleArray(array: JobDefinition[]) {
@@ -42,6 +55,8 @@ const App: React.FC = () => {
     return array;
   }
 
+  // console.log(sortedJobs);
+
   const JobList: React.ReactElement[] = sortedJobs.map((value) => {
     const { id } = value;
     return <Job key={id} {...value} />;
@@ -50,6 +65,7 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <Nav />
+      {showTopBtn && <ScrollToTop goToTop={goToTop} />}
       {loading && (
         <div className="Loader">
           <ClimbingBoxLoader color={"#00c"} loading={loading} size={15} />
