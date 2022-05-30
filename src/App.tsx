@@ -1,19 +1,20 @@
-import React, { useEffect, useState, useContext } from "react";
+import { FC, ReactElement, useEffect, useState, useMemo } from "react";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 
 import Job from "./components/Job";
 import Nav from "./components/Nav";
 import OrderBy from "./components/OrderBy";
-import { connect, OrderContext } from "./contexts/OrderContext";
-import { OrderTypes } from "./types/order";
-import JobDefinition from "./types/job";
-import ScrollToTop from "./components/ScrollToTop";
+import OrderContext from "./contexts/OrderContext";
 
+import OrderDefinition, { OrderTypes } from "./types/order";
+import sortJobs from "./utils/sortJobs";
+import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
 
-const App: React.FC = () => {
+const App: FC = () => {
   const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [orderby, setOrderby] = useState<string>(OrderTypes.Random);
+  const [loading, setLoading] = useState<boolean>(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   const fetchData: () => Promise<void> = async () => {
@@ -23,11 +24,11 @@ const App: React.FC = () => {
     setJobs(data);
   };
 
-  const goToTop = (): void => {
+  let goToTop: () => any = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const { orderby } = useContext(OrderContext);
+  const toggleOrder = (newOrder: string) => setOrderby(newOrder);
 
   useEffect(() => {
     setLoading(true);
@@ -41,44 +42,38 @@ const App: React.FC = () => {
     });
   }, []);
 
-  let sortedJobs: JobDefinition[];
+  const memoJobs = useMemo(() => {
+    return sortJobs(jobs, orderby as OrderDefinition);
+  }, [jobs, orderby]);
 
-  if (orderby === OrderTypes.Prioprity) {
-    sortedJobs = [...jobs].sort((pr1, pr2) => pr2.priority - pr1.priority);
-  } else sortedJobs = shuffleArray([...jobs]);
-
-  function shuffleArray(array: JobDefinition[]) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
-
-  // console.log(sortedJobs);
-
-  const JobList: React.ReactElement[] = sortedJobs.map((value) => {
+  const JobList: ReactElement[] = memoJobs.map((value) => {
     const { id } = value;
     return <Job key={id} {...value} />;
   });
 
   return (
     <div className="App">
-      <Nav />
       {showTopBtn && <ScrollToTop goToTop={goToTop} />}
-      {loading && (
-        <div className="Loader">
-          <ClimbingBoxLoader color={"#00c"} loading={loading} size={15} />
-        </div>
-      )}
-      {!!JobList.length && (
-        <div data-testid="app-jobs" className="App-jobs">
-          <OrderBy />
-          {JobList}
-        </div>
-      )}
+      <Nav />
+      <OrderContext.Provider
+        value={{
+          orderby: orderby as OrderDefinition,
+          toggleOrder,
+        }}
+      >
+        {!!JobList.length ? (
+          <div data-testid="app-jobs" className="App-jobs">
+            <OrderBy />
+            {JobList}
+          </div>
+        ) : (
+          <div className="Loader">
+            <ClimbingBoxLoader color={"#00c"} loading={loading} size={15} />
+          </div>
+        )}
+      </OrderContext.Provider>
     </div>
   );
 };
 
-export default connect(App);
+export default App;

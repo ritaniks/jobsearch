@@ -1,5 +1,3 @@
-import React from "react";
-
 import "./index.css";
 
 const ScrollToTop = ({ goToTop }: any) => {
@@ -10,7 +8,7 @@ const ScrollToTop = ({ goToTop }: any) => {
         onClick={goToTop}
         className="icon-position icon-style"
       >
-        ⬆
+        ▲
       </button>
     </div>
   );

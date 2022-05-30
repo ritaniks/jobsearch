@@ -1,8 +1,8 @@
 export enum OrderTypes {
   Random = "random",
-  Prioprity = "priority",
+  Priority = "priority",
 }
 
-type OrderDefinition = OrderTypes.Random | OrderTypes.Prioprity;
+type OrderDefinition = OrderTypes.Random | OrderTypes.Priority;
 
 export default OrderDefinition;
