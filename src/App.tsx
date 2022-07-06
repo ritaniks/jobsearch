@@ -1,4 +1,5 @@
-import { FC, ReactElement, useEffect, useState, useMemo } from "react";
+import { FC, useEffect, useState, useMemo, forwardRef, Ref } from "react";
+import useVirtual from "react-cool-virtual";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 
 import Job from "./components/Job";
@@ -15,7 +16,26 @@ const App: FC = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [orderby, setOrderby] = useState<string>(OrderTypes.Random);
   const [loading, setLoading] = useState<boolean>(false);
-  const [showTopBtn, setShowTopBtn] = useState(false);
+  const [showTopBtn, setShowTopBtn] = useState<boolean>(false);
+
+  const {
+    outerRef,
+    innerRef,
+    items,
+  }: {
+    outerRef: Ref<HTMLDivElement> | undefined;
+    innerRef: Ref<HTMLDivElement> | undefined;
+    items: any[];
+  } = useVirtual<HTMLDivElement>({
+    itemCount: 1000,
+    useIsScrolling: true,
+  });
+
+  let goToTop: () => void = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const toggleOrder = (newOrder: string) => setOrderby(newOrder);
 
   const fetchData: () => Promise<void> = async () => {
     const result = await fetch("/jobs.json");
@@ -23,12 +43,6 @@ const App: FC = () => {
     setLoading(false);
     setJobs(data);
   };
-
-  let goToTop: () => any = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const toggleOrder = (newOrder: string) => setOrderby(newOrder);
 
   useEffect(() => {
     setLoading(true);
@@ -46,13 +60,25 @@ const App: FC = () => {
     return sortJobs(jobs, orderby as OrderDefinition);
   }, [jobs, orderby]);
 
-  const JobList: ReactElement[] = memoJobs.map((value) => {
-    const { id } = value;
-    return <Job key={id} {...value} />;
-  });
+  const HeavyItem = forwardRef(
+    (props: any, ref: Ref<HTMLDivElement> | undefined) => {
+      const { id } = props;
+      return (
+        <div {...props} ref={ref}>
+          <Job key={id} {...props} />
+        </div>
+      );
+    }
+  );
+
+  const LightItem = (props: any) => <div {...props}>Scrolling...</div>;
 
   return (
-    <div className="App">
+    <div
+      className="App"
+      style={{ width: "100wv", height: "100hv", overflow: "auto" }}
+      ref={outerRef}
+    >
       {showTopBtn && <ScrollToTop goToTop={goToTop} />}
       <Nav />
       <OrderContext.Provider
@@ -61,10 +87,31 @@ const App: FC = () => {
           toggleOrder,
         }}
       >
-        {!!JobList.length ? (
+        {!!memoJobs.length ? (
           <div data-testid="app-jobs" className="App-jobs">
             <OrderBy />
-            {JobList}
+            <div ref={innerRef}>
+              {items.map(
+                ({
+                  index,
+                  isScrolling,
+                  measureRef,
+                }: {
+                  index: number;
+                  isScrolling: boolean;
+                  measureRef: Ref<HTMLDivElement> | undefined | undefined;
+                }) =>
+                  isScrolling ? (
+                    <LightItem key={index} />
+                  ) : (
+                    <HeavyItem
+                      key={index}
+                      ref={measureRef}
+                      {...memoJobs[index]}
+                    />
+                  )
+              )}
+            </div>
           </div>
         ) : (
           <div className="Loader">
