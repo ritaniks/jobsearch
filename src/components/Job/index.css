@@ -31,9 +31,6 @@
   text-decoration: underline;
 }
 
-.App-job > .App-job__link > .App-job__meta {
-}
-
 .App-job > .App-job__link > .App-job__meta > .App-job__company {
   font-weight: 400;
   color: #000;

@@ -1,5 +1,6 @@
 import { FC, useEffect, useState, useMemo, forwardRef, Ref } from "react";
 import useVirtual from "react-cool-virtual";
+import "intersection-observer";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 
 import Job from "./components/Job";
@@ -71,53 +72,59 @@ const App: FC = () => {
     }
   );
 
-  const LightItem = (props: any) => <div {...props}>Scrolling...</div>;
+  const LightItem = (props: any) => (
+    <div {...props} style={{ color: "#999" }}>
+      Scrolling...
+    </div>
+  );
 
   return (
-    <div
-      className="App"
-      style={{ width: "100wv", height: "100hv", overflow: "auto" }}
-      ref={outerRef}
-    >
+    <div className="App">
       {showTopBtn && <ScrollToTop goToTop={goToTop} />}
       <Nav />
+
       <OrderContext.Provider
         value={{
           orderby: orderby as OrderDefinition,
           toggleOrder,
         }}
       >
-        {!!memoJobs.length ? (
-          <div data-testid="app-jobs" className="App-jobs">
-            <OrderBy />
-            <div ref={innerRef}>
-              {items.map(
-                ({
-                  index,
-                  isScrolling,
-                  measureRef,
-                }: {
-                  index: number;
-                  isScrolling: boolean;
-                  measureRef: Ref<HTMLDivElement> | undefined | undefined;
-                }) =>
-                  isScrolling ? (
-                    <LightItem key={index} />
-                  ) : (
-                    <HeavyItem
-                      key={index}
-                      ref={measureRef}
-                      {...memoJobs[index]}
-                    />
-                  )
-              )}
+        <div
+          style={{ width: "100%", height: "100%", overflow: "auto" }}
+          ref={outerRef}
+        >
+          {!!memoJobs.length ? (
+            <div data-testid="app-jobs" className="App-jobs">
+              <OrderBy />
+              <div ref={innerRef}>
+                {items.map(
+                  ({
+                    index,
+                    isScrolling,
+                    measureRef,
+                  }: {
+                    index: number;
+                    isScrolling: boolean;
+                    measureRef: Ref<HTMLDivElement> | undefined;
+                  }) =>
+                    isScrolling ? (
+                      <LightItem key={index} />
+                    ) : (
+                      <HeavyItem
+                        key={index}
+                        ref={measureRef}
+                        {...memoJobs[index]}
+                      />
+                    )
+                )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="Loader">
-            <ClimbingBoxLoader color={"#00c"} loading={loading} size={15} />
-          </div>
-        )}
+          ) : (
+            <div className="Loader">
+              <ClimbingBoxLoader color={"#00c"} loading={loading} size={15} />
+            </div>
+          )}
+        </div>
       </OrderContext.Provider>
     </div>
   );

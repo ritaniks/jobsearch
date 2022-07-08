@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 // change this line to encrease the number of generated jobs
-const NUMBER_OF_JOBS = 100;
+const NUMBER_OF_JOBS = 5000;
 const jobs = [];
 
 console.log("Start gen jobs.json");
