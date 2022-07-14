@@ -1,7 +1,3 @@
-type CompanyDefinition = {
-  name: string;
-};
-
 type JobDefinition = {
   description: string;
   priority: number;
@@ -9,7 +5,7 @@ type JobDefinition = {
   role: string;
   url: string;
   city: string;
-  company: CompanyDefinition;
+  company_name: string;
 };
 
 export default JobDefinition;

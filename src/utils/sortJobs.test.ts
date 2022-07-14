@@ -8,9 +8,7 @@ const NUMBER_OF_JOBS = 5000;
 const jobsTest: JobDefinition[] = [];
 
 for (let i = 0; i < NUMBER_OF_JOBS; i++) {
-  const company = {
-    name: faker.company.companyName(),
-  };
+
   const job = {
     id: faker.datatype.uuid(),
     description: faker.lorem.paragraph(10),
@@ -18,7 +16,7 @@ for (let i = 0; i < NUMBER_OF_JOBS; i++) {
     url: faker.internet.url(),
     city: faker.address.cityName(),
     priority: faker.datatype.number(100),
-    company,
+    company_name: faker.company.companyName(),
   };
   jobsTest.push(job);
 }

@@ -9,9 +9,7 @@ const job = {
   url: "http://vague-stuff.org",
   city: "Lompoc",
   priority: 29,
-  company: {
-    name: "Lockman, Wisoky and Harris",
-  },
+  company_name: "Lockman, Wisoky and Harris",
 };
 
 test("renders job role", () => {

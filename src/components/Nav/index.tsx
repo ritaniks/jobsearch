@@ -5,7 +5,7 @@ import "./index.css";
 const Nav: FC = () => {
   return (
     <header className="App-header">
-      <img className="App-header__logo" src="/logo.svg"></img>
+      <img className="App-header__logo" src="/logo.svg" alt="Jobtome"></img>
     </header>
   );
 };

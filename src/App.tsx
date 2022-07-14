@@ -1,4 +1,13 @@
-import { FC, useEffect, useState, useMemo, forwardRef, Ref } from "react";
+import {
+  FC,
+  useEffect,
+  useState,
+  useMemo,
+  forwardRef,
+  Ref,
+  SetStateAction,
+} from "react";
+import axios from "axios";
 import useVirtual from "react-cool-virtual";
 import "intersection-observer";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
@@ -12,6 +21,42 @@ import OrderDefinition, { OrderTypes } from "./types/order";
 import sortJobs from "./utils/sortJobs";
 import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
+
+const TOTAL_JOBS = 30;
+const BATCH_JOBS = 5;
+const isItemLoadedArr: boolean[] = [];
+
+const loadData = async (
+  { loadIndex, startIndex, stopIndex }: any,
+  setJobs: SetStateAction<any>
+) => {
+  isItemLoadedArr[loadIndex] = true;
+
+  let acc: any[] = [];
+
+  try {
+    const { data: jobsFetch } = await axios("/jobs.json?index=1");
+
+    for (let i = startIndex; i <= stopIndex; i++) {
+      acc.push(jobsFetch[i]);
+    }
+
+    setJobs((prevJobs: any) => {
+      const nextJobs = [...prevJobs];
+
+      acc.forEach((job: any) => {
+        nextJobs[job.index] = job;
+      });
+
+      console.log("prev:", prevJobs, "next:", nextJobs);
+
+      return nextJobs;
+    });
+  } catch (err) {
+    isItemLoadedArr[loadIndex] = false;
+    loadData({ loadIndex }, setJobs);
+  }
+};
 
 const App: FC = () => {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -28,8 +73,14 @@ const App: FC = () => {
     innerRef: Ref<HTMLDivElement> | undefined;
     items: any[];
   } = useVirtual<HTMLDivElement>({
-    itemCount: 1000,
-    useIsScrolling: true,
+    itemCount: TOTAL_JOBS,
+    loadMoreCount: BATCH_JOBS,
+    isItemLoaded: (loadIndex) => isItemLoadedArr[loadIndex],
+    loadMore: (e) => {
+      console.log(e);
+      loadData(e, setJobs);
+    },
+    useIsScrolling: (speed) => speed > 50,
   });
 
   let goToTop: () => void = () => {
@@ -38,16 +89,8 @@ const App: FC = () => {
 
   const toggleOrder = (newOrder: string) => setOrderby(newOrder);
 
-  const fetchData: () => Promise<void> = async () => {
-    const result = await fetch("/jobs.json");
-    const data = await result.json();
-    setLoading(false);
-    setJobs(data);
-  };
-
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => fetchData(), 2000);
     window.addEventListener("scroll", () => {
       if (window.scrollY > 400) {
         setShowTopBtn(true);
