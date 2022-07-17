@@ -3,23 +3,21 @@ const fs = require("fs");
 const path = require("path");
 
 // change this line to encrease the number of generated jobs
-const NUMBER_OF_JOBS = 5000;
+const NUMBER_OF_JOBS = 1000;
 const jobs = [];
 
 console.log("Start gen jobs.json");
 
 for (let i = 0; i < NUMBER_OF_JOBS; i++) {
-  const company = {
-    name: faker.company.companyName(),
-  };
   const job = {
+    index: i,
     id: faker.datatype.uuid(),
     description: faker.lorem.paragraph(10),
     role: `${faker.commerce.department()} Creator`,
     url: faker.internet.url(),
     city: faker.address.cityName(),
     priority: faker.datatype.number(100),
-    company,
+    company_name: faker.company.companyName(),
   };
   jobs.push(job);
 }
