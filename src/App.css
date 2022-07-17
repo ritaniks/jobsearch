@@ -3,7 +3,6 @@
 }
 
 .App-jobs {
-  /* min-height: 100vh; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,7 +28,6 @@
 }
 
 .List {
-  /* border: 1px solid #d9dddd; */
   margin-top: 16px;
 }
 

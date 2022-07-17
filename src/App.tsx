@@ -22,38 +22,31 @@ import sortJobs from "./utils/sortJobs";
 import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
 
-const TOTAL_JOBS = 30;
+const TOTAL_JOBS = 500;
 const BATCH_JOBS = 5;
 const isItemLoadedArr: boolean[] = [];
 
-const loadData = async (
-  { loadIndex, startIndex, stopIndex }: any,
-  setJobs: SetStateAction<any>
-) => {
+const loadData = async ({ loadIndex }: any, setJobs: SetStateAction<any>) => {
+  // Set the state of a batch items as `true`
+  // to avoid the callback from being invoked repeatedly
   isItemLoadedArr[loadIndex] = true;
 
-  let acc: any[] = [];
-
   try {
-    const { data: jobsFetch } = await axios("/jobs.json?index=1");
-
-    for (let i = startIndex; i <= stopIndex; i++) {
-      acc.push(jobsFetch[i]);
-    }
+    const { data: jobsFetch } = await axios("/jobs.json");
 
     setJobs((prevJobs: any) => {
       const nextJobs = [...prevJobs];
 
-      acc.forEach((job: any) => {
+      jobsFetch.forEach((job: any) => {
         nextJobs[job.index] = job;
       });
-
-      console.log("prev:", prevJobs, "next:", nextJobs);
 
       return nextJobs;
     });
   } catch (err) {
+    // If there's an error set the state back to `false`
     isItemLoadedArr[loadIndex] = false;
+    // Then try again
     loadData({ loadIndex }, setJobs);
   }
 };
@@ -72,15 +65,15 @@ const App: FC = () => {
     outerRef: Ref<HTMLDivElement> | undefined;
     innerRef: Ref<HTMLDivElement> | undefined;
     items: any[];
+    startItem: (index: number, callback?: () => void) => void;
   } = useVirtual<HTMLDivElement>({
     itemCount: TOTAL_JOBS,
     loadMoreCount: BATCH_JOBS,
     isItemLoaded: (loadIndex) => isItemLoadedArr[loadIndex],
     loadMore: (e) => {
-      console.log(e);
       loadData(e, setJobs);
     },
-    useIsScrolling: (speed) => speed > 50,
+    useIsScrolling: true,
   });
 
   let goToTop: () => void = () => {
@@ -117,7 +110,7 @@ const App: FC = () => {
 
   const LightItem = (props: any) => (
     <div {...props} style={{ color: "#999" }}>
-      Scrolling...
+      isScrolling...
     </div>
   );
 
