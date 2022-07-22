@@ -16,6 +16,7 @@ import Job from "./components/Job";
 import Nav from "./components/Nav";
 import OrderBy from "./components/OrderBy";
 import OrderContext from "./contexts/OrderContext";
+import Skeleton from "./components/Skeleton";
 
 import OrderDefinition, { OrderTypes } from "./types/order";
 import sortJobs from "./utils/sortJobs";
@@ -24,29 +25,29 @@ import "./App.css";
 
 const TOTAL_JOBS = 500;
 const BATCH_JOBS = 5;
-const isItemLoadedArr: boolean[] = [];
+let acc: any[] = [];
 
-const loadData = async ({ loadIndex }: any, setJobs: SetStateAction<any>) => {
-  // Set the state of a batch items as `true`
-  // to avoid the callback from being invoked repeatedly
-  isItemLoadedArr[loadIndex] = true;
-
+const loadData = async (
+  { loadIndex, startIndex, stopIndex }: any,
+  setJobs: SetStateAction<any>
+) => {
   try {
     const { data: jobsFetch } = await axios("/jobs.json");
+
+    for (let i = startIndex; i <= stopIndex; i++) {
+      acc.push(jobsFetch[i]);
+    }
 
     setJobs((prevJobs: any) => {
       const nextJobs = [...prevJobs];
 
-      jobsFetch.forEach((job: any) => {
+      acc.forEach((job: any) => {
         nextJobs[job.index] = job;
       });
 
       return nextJobs;
     });
   } catch (err) {
-    // If there's an error set the state back to `false`
-    isItemLoadedArr[loadIndex] = false;
-    // Then try again
     loadData({ loadIndex }, setJobs);
   }
 };
@@ -61,15 +62,15 @@ const App: FC = () => {
     outerRef,
     innerRef,
     items,
+    startItem,
   }: {
     outerRef: Ref<HTMLDivElement> | undefined;
     innerRef: Ref<HTMLDivElement> | undefined;
     items: any[];
     startItem: (index: number, callback?: () => void) => void;
   } = useVirtual<HTMLDivElement>({
-    itemCount: TOTAL_JOBS,
+    itemCount: jobs.length,
     loadMoreCount: BATCH_JOBS,
-    isItemLoaded: (loadIndex) => isItemLoadedArr[loadIndex],
     loadMore: (e) => {
       loadData(e, setJobs);
     },
@@ -93,6 +94,12 @@ const App: FC = () => {
     });
   }, []);
 
+  useEffect(() => {
+    startItem(BATCH_JOBS, () => {
+      if (jobs.length < TOTAL_JOBS) loadData(0, setJobs);
+    });
+  }, [jobs.length, startItem]);
+
   const memoJobs = useMemo(() => {
     return sortJobs(jobs, orderby as OrderDefinition);
   }, [jobs, orderby]);
@@ -109,8 +116,8 @@ const App: FC = () => {
   );
 
   const LightItem = (props: any) => (
-    <div {...props} style={{ color: "#999" }}>
-      isScrolling...
+    <div {...props} className="Skeleton">
+      <Skeleton />
     </div>
   );
 
